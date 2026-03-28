@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>古诗萌宠乐园 · 最终优化版</title>
+<style>
+:root{
+  --bg:#f0f9f6; --card:#ffffff; --border:#d1e7dd; --text:#2d3748;
+  --primary:#2d9a7e; --success:#36d399; --warning:#ffba52; --purple:#a78bfa;
+  --light:#e6fffa; --shadow:rgba(45,154,126,0.1);
+}
+[data-theme="pink"]{
+  --bg:#fff5f8; --card:#ffffff; --border:#fbcfe8; --text:#552c40;
+  --primary:#f472b6; --success:#4ade80; --warning:#fbbf24; --purple:#c084fc;
+  --light:#fce7f3; --shadow:rgba(244,114,182,0.1);
+}
+[data-theme="dark"]{
+  --bg:#1e1e2f; --card:#2d2d44; --border:#444466; --text:#e0e0ff;
+  --primary:#7c3aed; --success:#10b981; --warning:#f59e0b; --purple:#a855f7;
+  --light:#3b3b5a; --shadow:rgba(124,58,237,0.15);
+}
+[data-theme="orange"]{
+  --bg:#fffbeb; --card:#ffffff; --border:#fed7aa; --text:#4b3621;
+  --primary:#f97316; --success:#22c55e; --warning:#fbbf24; --purple:#8b5cf6;
+  --light:#fff3e0; --shadow:rgba(249,115,22,0.1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'PingFang SC','Microsoft YaHei',sans-serif;transition:background 0.3s,color 0.3s,border-color 0.3s;}
+body{background:var(--bg);color:var(--text);padding:20px;}
+.container{max-width:600px;margin:0 auto;}
+
+.page{display:none;}
+.page.active{display:block;}
+
+.card{background:var(--card);border-radius:24px;padding:24px;margin-bottom:20px;
+box-shadow:0 10px 30px var(--shadow);border:1px solid var(--border);}
+
+.title{font-size:24px;font-weight:700;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+.btn{width:100%;padding:16px;border:none;border-radius:30px;font-size:16px;font-weight:bold;
+color:#fff;margin:10px 0;cursor:pointer;transition:all 0.2s;}
+.btn:hover{transform:scale(1.03);}
+.btn-primary{background:linear-gradient(90deg,var(--primary),color-mix(in srgb,var(--primary),#fff 20%));}
+.btn-success{background:linear-gradient(90deg,var(--success),color-mix(in srgb,var(--success),#fff 20%));}
+.btn-warning{background:linear-gradient(90deg,var(--warning),color-mix(in srgb,var(--warning),#fff 20%));}
+.btn-purple{background:linear-gradient(90deg,var(--purple),color-mix(in srgb,var(--purple),#fff 20%));}
+.btn-light{background:linear-gradient(90deg,var(--light),color-mix(in srgb,var(--light),#fff 20%));color:var(--primary);}
+
+.pet-stage{position:relative;width:260px;height:300px;margin:30px auto;}
+.pet-body{position:absolute;width:100%;height:100%;font-size:130px;display:flex;align-items:center;justify-content:center;transition:0.2s;}
+
+.pet-eating{animation:eat 0.5s ease-in-out;}
+.pet-happy{animation:jump 0.6s ease-in-out;}
+.pet-sad{filter:grayscale(0.5);opacity:0.8;}
+.pet-evolve{animation:evolve 1s ease-in-out;}
+@keyframes eat{0%{transform:scale(1);}50%{transform:scale(0.94);}100%{transform:scale(1);}}
+@keyframes jump{0%{transform:translateY(0);}50%{transform:translateY(-12px);}100%{transform:translateY(0);}}
+@keyframes evolve{0%{transform:scale(1);}50%{transform:scale(1.3);}100%{transform:scale(1);}}
+
+/* 装扮位置 */
+.acc{position:absolute;left:50%;transform:translateX(-50%);font-size:36px;z-index:10;text-align:center;}
+.hat{top:10px; font-size:40px;}
+.crown{top:-10px; font-size:42px;}
+.glasses{top:60px; font-size:32px;}
+.wreath{top:0px; font-size:44px;}
+.bow{top:30px; right:65px; left:auto; transform:none; font-size:30px;}
+.cape{bottom:30px; transform:translateX(-50%) scale(1.2); font-size:40px;}
+.bag{right:60px; bottom:40px; left:auto; transform:none; font-size:34px;}
+.wing{top:50%; transform:translate(-50%,-50%); font-size:60px; z-index:5;}
+
+.info{text-align:center;margin:8px 0;font-size:17px;}
+.status{text-align:center;font-size:15px;margin:6px 0;font-weight:bold;}
+.score-bar{display:flex;justify-content:space-between;font-size:18px;margin:10px 0;font-weight:600;color:var(--primary);}
+
+.question{font-size:18px;line-height:1.7;margin-bottom:10px;}
+.result{text-align:center;font-size:20px;font-weight:bold;margin:10px 0;}
+
+.fly-food{position:absolute;z-index:99;pointer-events:none;animation:fly 0.6s ease-out forwards;font-size:30px;}
+.heart{position:absolute;font-size:24px;animation:fly 0.7s ease-out forwards;z-index:99;pointer-events:none;}
+@keyframes fly{0%{transform:scale(0.8);opacity:1;}100%{transform:translateY(-80px) scale(1);opacity:0;}}
+
+.input-box{width:100%;padding:14px 18px;border:1px solid var(--border);border-radius:16px;margin:10px 0;font-size:16px;outline:none;background:var(--card);color:var(--text);}
+.input-box:focus{border-color:var(--primary);}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.theme-switch{display:flex;gap:8px;justify-content:center;margin:10px 0;}
+.theme-btn{width:40px;height:40px;border-radius:50%;border:2px solid var(--border);cursor:pointer;}
+.theme-green{background:#2d9a7e;}
+.theme-pink{background:#f472b6;}
+.theme-dark{background:#7c3aed;}
+.theme-orange{background:#f97316;}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+<!-- 主题切换 -->
+<div class="theme-switch">
+  <div class="theme-btn theme-green" onclick="setTheme('green')" title="清新国风"></div>
+  <div class="theme-btn theme-pink" onclick="setTheme('pink')" title="粉嫩少女"></div>
+  <div class="theme-btn theme-dark" onclick="setTheme('dark')" title="暗夜萌宠"></div>
+  <div class="theme-btn theme-orange" onclick="setTheme('orange')" title="元气橙黄"></div>
+</div>
+
+<!-- 主页 -->
+<div id="page-home" class="page active">
+  <div class="card">
+    <div class="title">🐾 我的萌宠</div>
+    <div class="pet-stage" onclick="petTouch()">
+      <div id="pet-body" class="pet-body">🐰</div>
+      <div id="wing" class="acc wing"></div>
+      <div id="crown" class="acc crown"></div>
+      <div id="hat" class="acc hat"></div>
+      <div id="wreath" class="acc wreath"></div>
+      <div id="glasses" class="acc glasses"></div>
+      <div id="bow" class="acc bow"></div>
+      <div id="cape" class="acc cape"></div>
+      <div id="bag" class="acc bag"></div>
+    </div>
+    <div class="info" style="font-size:22px;font-weight:bold;" id="pet-name">萌萌兔</div>
+    <div class="info">等级 Lv.<span id="level">1</span></div>
+    <div class="info">阶段 <span id="stage">幼年期</span></div>
+    <div class="info">心情值 <span id="mood">100</span>%</div>
+    <div class="status" id="status">开心 😊</div>
+  </div>
+
+  <div class="card">
+    <div class="title">⭐ 我的积分</div>
+    <div class="score-bar"><span>当前积分</span><span id="score">0</span></div>
+    <div class="grid">
+      <button class="btn btn-success" onclick="signIn()">📅 签到</button>
+      <button class="btn btn-purple" onclick="randomEvent()">🎁 随机事件</button>
+      <button class="btn btn-primary" onclick="goPage('answer')">📖 答题</button>
+      <button class="btn btn-warning" onclick="goPage('shop')">🛍️ 商店</button>
+      <button class="btn btn-purple" onclick="goPage('skill')">✨ 技能</button>
+      <button class="btn btn-light" onclick="goPage('friend')">👋 好友拜访</button>
+    </div>
+    <button class="btn btn-light" onclick="goPage('evolve')">🐉 进化</button>
+  </div>
+</div>
+
+<!-- 答题页 -->
+<div id="page-answer" class="page">
+  <div class="card"><div class="title">📜 古诗小课堂</div><div class="question" id="question"></div></div>
+  <div class="card"><div id="options"></div></div>
+  <div class="result" id="result"></div>
+  <button class="btn btn-success" id="next" style="display:none;" onclick="next()">下一题</button>
+  <button class="btn btn-light" onclick="goPage('home')">返回主页</button>
+</div>
+
+<!-- 商店 -->
+<div id="page-shop" class="page">
+  <div class="card"><div class="title">🛒 萌宠商店</div><div class="score-bar"><span>积分</span><span id="shop-score">0</span></div></div>
+  <div class="card"><div class="title">🐾 更换宠物</div>
+    <button class="btn btn-primary" onclick="setPet('🐱','小奶猫')">🐱 小奶猫 -60</button>
+    <button class="btn btn-primary" onclick="setPet('🐶','小柴犬')">🐶 小柴犬 -60</button>
+    <button class="btn btn-primary" onclick="setPet('🐼','熊猫宝')">🐼 熊猫宝 -80</button>
+    <button class="btn btn-primary" onclick="setPet('🦊','小狐狸')">🦊 小狐狸 -80</button>
+    <button class="btn btn-primary" onclick="setPet('🐲','小龙神')">🐲 小龙神 -120</button>
+  </div>
+  <div class="card"><div class="title">🍓 喂食零食</div>
+    <button class="btn btn-success" onclick="feed(5,10,'🍪')">🍪 +10心情 -5</button>
+    <button class="btn btn-success" onclick="feed(8,15,'🥛')">🥛 +15心情 -8</button>
+    <button class="btn btn-success" onclick="feed(10,20,'🥕')">🥕 +20心情 -10</button>
+    <button class="btn btn-success" onclick="feed(12,22,'🍓')">🍓 +22心情 -12</button>
+    <button class="btn btn-success" onclick="feed(15,28,'🍰')">🍰 +28心情 -15</button>
+    <button class="btn btn-success" onclick="feed(18,35,'🍯')">🍯 +35心情 -18</button>
+  </div>
+  <div class="card"><div class="title">🎀 装扮穿搭</div>
+    <button class="btn btn-warning" onclick="wear('hat','🎩',25)">🎩 礼帽 -25</button>
+    <button class="btn btn-warning" onclick="wear('glasses','👓',30)">👓 眼镜 -30</button>
+    <button class="btn btn-warning" onclick="wear('bow','🎀',20)">🎀 蝴蝶结 -20</button>
+    <button class="btn btn-warning" onclick="wear('wreath','🌸',35)">🌸 花环 -35</button>
+    <button class="btn btn-warning" onclick="wear('cape','🧣',40)">🧣 围巾 -40</button>
+    <button class="btn btn-warning" onclick="wear('bag','🎒',45)">🎒 书包 -45</button>
+    <button class="btn btn-warning" onclick="wear('wing','🦋',60)">🦋 翅膀 -60</button>
+    <button class="btn btn-warning" onclick="wear('crown','👑',80)">👑 皇冠 -80</button>
+    <button class="btn btn-purple" onclick="clearAll()">❌ 卸下全部装扮</button>
+  </div>
+  <div class="card"><div class="title">✏️ 道具商店</div>
+    <input class="input-box" id="new-name" placeholder="输入新名字" maxlength="8">
+    <button class="btn btn-purple" onclick="changeName()">✏️ 改名卡 -50</button>
+  </div>
+  <button class="btn btn-light" onclick="goPage('home')">回家</button>
+</div>
+
+<!-- 进化 -->
+<div id="page-evolve" class="page">
+  <div class="card"><div class="title">🐉 宠物进化</div><div class="info">等级≥10可进化</div></div>
+  <button class="btn btn-purple" onclick="doEvolve()">✨ 进化宠物</button>
+  <button class="btn btn-light" onclick="goPage('home')">返回</button>
+</div>
+
+<!-- 技能 -->
+<div id="page-skill" class="page">
+  <div class="card"><div class="title">✨ 宠物技能（2小时冷却）</div></div>
+  <button class="btn btn-purple" onclick="skillLuck()">🍀 幸运祝福（+积分）</button>
+  <button class="btn btn-purple" onclick="skillMood()">☀️ 心情治愈（回满心情）</button>
+  <button class="btn btn-purple" onclick="skillShine()">🌟 闪耀光环（全属性+）</button>
+  <button class="btn btn-light" onclick="goPage('home')">返回</button>
+</div>
+
+<!-- 好友拜访 -->
+<div id="page-friend" class="page">
+  <div class="card">
+    <div class="title">👋 好友拜访</div>
+    <div class="info">来串门的小动物</div>
+    <div id="friend-pet" style="font-size:60px;text-align:center;margin:20px 0;"></div>
+    <div id="friend-msg" style="text-align:center;margin-bottom:10px;"></div>
+    <button class="btn btn-success" onclick="feedFriend()">🍬 给好友喂食（+心情）</button>
+  </div>
+  <button class="btn btn-success" onclick="friendCome()">👋 召唤好友</button>
+  <button class="btn btn-light" onclick="goPage('home')">返回</button>
+</div>
+
+</div>
+
+<script>
+// 主题
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('petTheme',t);
+}
+function loadTheme(){
+  let t=localStorage.getItem('petTheme')||'green';
+  setTheme(t);
+}
+
+// 存档
+function loadGame(){
+  let s=localStorage.getItem("petGameFinal");
+  if(s){try{let d=JSON.parse(s);game={...game,...d};}catch(e){}}
+  updateAll();
+}
+function saveGame(){localStorage.setItem("petGameFinal",JSON.stringify(game));}
+function updateAll(){updateHome();updateShop();updateStatus();}
+
+let game={
+  score:0,level:1,pet:"🐰",petName:"萌萌兔",mood:100,stage:0,
+  acc:{hat:"",glasses:"",bow:"",wreath:"",cape:"",bag:"",wing:"",crown:""},
+  qIndex:0,lastMoodTime:Date.now(),lastSign:0,
+  lastRandom:0,
+  lastSkillLuck:0,
+  lastSkillMood:0,
+  lastSkillShine:0,
+  questions:[
+    {q:"举头望明月，下一句是？",opt:["低头思故乡","处处闻啼鸟","汗滴禾下土"],ans:0},
+    {q:"床前明月光，作者是？",opt:["李白","杜甫","白居易"],ans:0},
+    {q:"春眠不觉晓，下一句是？",opt:["处处闻啼鸟","夜来风雨声","花落知多少"],ans:0},
+    {q:"欲穷千里目，更上一层楼。说的是？",opt:["鹳雀楼","黄鹤楼","岳阳楼"],ans:0},
+    {q:"小荷才露尖尖角，下一句是？",opt:["早有蜻蜓立上头","泉眼无声惜细流","映日荷花别样红"],ans:0},
+    {q:"牧童骑黄牛，下一句是？",opt:["歌声振林樾","意欲捕鸣蝉","忽然闭口立"],ans:0},
+    {q:"飞流直下三千尺，写的是？",opt:["庐山","黄山","泰山"],ans:0},
+    {q:"遥知不是雪，为有暗香来。赞美？",opt:["梅花","兰花","菊花"],ans:0},
+    {q:"碧玉妆成一树高，写的是？",opt:["柳树","杨树","桃树"],ans:0},
+    {q:"墙角数枝梅，作者是？",opt:["王安石","李白","苏轼"],ans:0},
+    {q:"松下问童子，作者是？",opt:["贾岛","白居易","孟浩然"],ans:0},
+    {q:"小时不识月，作者是？",opt:["李白","杜甫","骆宾王"],ans:0},
+    {q:"白毛浮绿水，写的是？",opt:["鹅","鸭","鹤"],ans:0},
+    {q:"大漠孤烟直，作者是？",opt:["王维","王昌龄","岑参"],ans:0},
+    {q:"海内存知己，作者是？",opt:["王勃","李白","杜甫"],ans:0},
+    {q:"谁知盘中餐，作者是？",opt:["李绅","孟浩然","柳宗元"],ans:0},
+    {q:"离离原上草，作者是？",opt:["白居易","杜甫","刘禹锡"],ans:0},
+    {q:"孤舟蓑笠翁，作者是？",opt:["柳宗元","韩愈","李商隐"],ans:0},
+    {q:"春风又绿江南岸，作者是？",opt:["王安石","苏轼","欧阳修"],ans:0},
+    {q:"清明时节雨纷纷，作者是？",opt:["杜牧","杜甫","韦应物"],ans:0}
+  ]
+};
+
+// 页面切换
+function goPage(p){
+  document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
+  document.getElementById("page-"+p).classList.add("active");
+  if(p=="home"){calMood();updateAll();}
+  if(p=="answer")loadQ();
+  if(p=="shop")updateShop();
+}
+
+// 主页刷新 + 装扮显示
+function updateHome(){
+  document.getElementById("score").textContent=game.score;
+  document.getElementById("level").textContent=game.level;
+  document.getElementById("pet-body").textContent=game.pet;
+  document.getElementById("pet-name").textContent=game.petName;
+  document.getElementById("mood").textContent=game.mood;
+  let stageTxt=["幼年期","成长期","成熟期","仙灵期","神兽期"];
+  document.getElementById("stage").textContent=stageTxt[Math.min(game.stage,4)];
+
+  // 装扮全部显示
+  document.getElementById("hat").textContent = game.acc.hat;
+  document.getElementById("crown").textContent = game.acc.crown;
+  document.getElementById("glasses").textContent = game.acc.glasses;
+  document.getElementById("wreath").textContent = game.acc.wreath;
+  document.getElementById("bow").textContent = game.acc.bow;
+  document.getElementById("cape").textContent = game.acc.cape;
+  document.getElementById("bag").textContent = game.acc.bag;
+  document.getElementById("wing").textContent = game.acc.wing;
+
+  let pet=document.getElementById("pet-body");
+  game.mood<30?pet.classList.add("pet-sad"):pet.classList.remove("pet-sad");
+}
+
+function updateShop(){
+  document.getElementById("shop-score").textContent=game.score;
+}
+
+// 心情状态
+function updateStatus(){
+  let s=document.getElementById("status");
+  if(game.mood>=80)s.textContent="超级开心 😆";
+  else if(game.mood>=50)s.textContent="开心 😊";
+  else if(game.mood>=30)s.textContent="一般 😐";
+  else if(game.mood>=10)s.textContent="不开心 ☹️";
+  else s.textContent="生病啦 🤒 快喂食";
+}
+
+// 自动掉心情：每1分钟掉2%
+function calMood(){
+  let now = Date.now();
+  let passMs = now - game.lastMoodTime;
+  let minutes = passMs / (1000 * 60);
+  let drop = Math.floor(minutes * 2);
+  if(drop > 0){
+    game.mood = Math.max(0, game.mood - drop);
+    game.lastMoodTime = now;
+    saveGame();
+  }
+}
+
+// 升级：每1000积分升1级
+function checkLevel(){
+  let nl = Math.floor(game.score / 1000) + 1;
+  if(nl > game.level){
+    game.level = nl;
+    alert("🎉 升级！Lv" + game.level);
+    saveGame();
+  }
+}
+
+// 答题
+function loadQ(){
+  let q=game.questions[game.qIndex];
+  document.getElementById("question").textContent=q.q;
+  let h="";q.opt.forEach((o,i)=>{h+=`<button class="btn btn-primary" onclick="choose(${i})">${o}</button>`;});
+  document.getElementById("options").innerHTML=h;
+  document.getElementById("result").textContent="";
+  document.getElementById("next").style.display="none";
+}
+function choose(i){
+  let q=game.questions[game.qIndex],r=document.getElementById("result");
+  if(i==q.ans){
+    r.textContent="✅ 正确 +5分";
+    r.style.color="var(--success)";
+    game.score += 5;
+    game.mood=Math.min(100,game.mood+2);
+    checkLevel();
+  } else {
+    r.textContent="❌ 错误";
+    r.style.color="#ff4d4f";
+  }
+  document.getElementById("next").style.display="block";
+  updateAll();saveGame();
+}
+function next(){game.qIndex=Math.floor(Math.random()*game.questions.length);loadQ();}
+
+// 更换宠物
+function setPet(e,n){
+  let p={"🐰":50,"🐱":60,"🐶":60,"🐼":80,"🦊":80,"🐲":120}[e];
+  if(game.score<p)return alert("积分不足");
+  game.score-=p;game.pet=e;game.petName=n;updateAll();saveGame();alert("拥有："+n);
+}
+
+// 喂食自己
+function feed(p,a,f){
+  if(game.mood<=0)return alert("生病啦，先喂点东西");
+  if(game.score<p)return alert("积分不够");
+  game.score-=p;game.mood=Math.min(100,game.mood+a);
+  let pb=document.getElementById("pet-body");pb.classList.add("pet-eating");
+  setTimeout(()=>pb.classList.remove("pet-eating"),500);
+  let fd=document.createElement("div");fd.className="fly-food";fd.textContent=f;
+  fd.style.left="50%";fd.style.top="50%";document.body.appendChild(fd);
+  setTimeout(()=>fd.remove(),600);updateAll();saveGame();
+}
+
+// 装扮穿戴
+function wear(k,e,p){
+  if(game.mood<20)return alert("心情不好，先别打扮");
+  if(game.score<p)return alert("积分不足");
+  game.score-=p;game.acc[k]=e;updateAll();saveGame();
+}
+function clearAll(){
+  game.acc={hat:"",glasses:"",bow:"",wreath:"",cape:"",bag:"",wing:"",crown:""};
+  updateAll();saveGame();
+  alert("已卸下所有装扮");
+}
+
+// 摸头
+function petTouch(){
+  if(game.mood<10)return alert("生病啦，摸不动");
+  game.mood=Math.min(100,game.mood+1);
+  let pb=document.getElementById("pet-body");pb.classList.add("pet-happy");
+  setTimeout(()=>pb.classList.remove("pet-happy"),600);
+  let h=document.createElement("div");h.className="heart";h.textContent="❤️";
+  h.style.left="50%";h.style.top="40%";document.body.appendChild(h);
+  setTimeout(()=>h.remove(),700);updateAll();saveGame();
+}
+
+// 改名
+function changeName(){
+  let v=document.getElementById("new-name").value.trim();
+  if(!v)return alert("请输入名字");if(v.length>8)return alert("最多8字");
+  if(game.score<50)return alert("积分不足");
+  game.score-=50;game.petName=v;alert("改名成功："+v);updateAll();saveGame();
+}
+
+// 签到
+function signIn(){
+  let t=new Date().getDate();if(game.lastSign==t)return alert("今日已签到");
+  game.lastSign=t;game.score+=20;game.mood=Math.min(100,game.mood+5);
+  alert("签到成功 +20分");updateAll();saveGame();
+}
+
+// 随机事件 1小时冷却
+function randomEvent(){
+  let now=Date.now();
+  if(now-game.lastRandom < 3600000){
+    let left=Math.ceil((3600000-(now-game.lastRandom))/60000);
+    return alert(`随机事件冷却中，剩余 ${left} 分钟`);
+  }
+  game.lastRandom=now;
+  let r=Math.random();
+  if(r<0.4){let a=Math.floor(Math.random()*15)+5;game.score+=a;alert(`🎉 捡到小钱包！+${a}分`);}
+  else if(r<0.75){let a=Math.floor(Math.random()*8)+3;game.mood=Math.min(100,game.mood+a);alert(`☀️ 心情变好 +${a}`);}
+  else if(r<0.9)alert("🍂 微风拂过，什么也没发生");
+  else{let l=Math.floor(Math.random()*6)+2;game.mood=Math.max(0,game.mood-l);alert(`😥 不小心摔跤 心情-${l}`);}
+  updateAll();saveGame();
+}
+
+// 进化
+function doEvolve(){
+  if(game.level<10)return alert("等级≥10才能进化");
+  if(game.stage>=4)return alert("已达最高阶");
+  game.stage++;
+  let pet=document.getElementById("pet-body");pet.classList.add("pet-evolve");
+  setTimeout(()=>pet.classList.remove("pet-evolve"),1000);
+  let m=["幼年期","成长期","成熟期","仙灵期","神兽期"];
+  alert(`进化成功！${m[game.stage]}`);
+  game.mood=100;updateAll();saveGame();
+}
+
+// 技能冷却 2 小时 = 7200000 ms
+const SKILL_CD = 7200000;
+
+function skillLuck(){
+  let now = Date.now();
+  if(now - game.lastSkillLuck < SKILL_CD){
+    let m = Math.ceil((SKILL_CD - (now - game.lastSkillLuck))/60000);
+    return alert(`技能冷却中，剩余 ${m} 分钟`);
+  }
+  if(game.level<3)return alert("等级3解锁");
+  game.lastSkillLuck = now;
+  let a=Math.floor(Math.random()*20)+10;game.score+=a;
+  alert(`🍀 幸运祝福 +${a}分`);updateAll();saveGame();
+}
+
+function skillMood(){
+  let now = Date.now();
+  if(now - game.lastSkillMood < SKILL_CD){
+    let m = Math.ceil((SKILL_CD - (now - game.lastSkillMood))/60000);
+    return alert(`技能冷却中，剩余 ${m} 分钟`);
+  }
+  if(game.level<5)return alert("等级5解锁");
+  game.lastSkillMood = now;
+  game.mood=100;alert("☀️ 心情已回满");updateAll();saveGame();
+}
+
+function skillShine(){
+  let now = Date.now();
+  if(now - game.lastSkillShine < SKILL_CD){
+    let m = Math.ceil((SKILL_CD - (now - game.lastSkillShine))/60000);
+    return alert(`技能冷却中，剩余 ${m} 分钟`);
+  }
+  if(game.level<8)return alert("等级8解锁");
+  game.lastSkillShine = now;
+  game.score+=30;game.mood=100;alert("🌟 全属性提升！积分+30，心情回满");updateAll();saveGame();
+}
+
+// 好友拜访
+function friendCome(){
+  let pets=["🐹","🐸","🐨","🐵","🐮","🐷","🦁"];
+  let msg=["来串门啦！","好饿呀~","一起玩吧！","谢谢你~"];
+  let p=pets[Math.floor(Math.random()*pets.length)];
+  let m=msg[Math.floor(Math.random()*msg.length)];
+  document.getElementById("friend-pet").textContent=p;
+  document.getElementById("friend-msg").textContent=m;
+  game.mood=Math.min(100,game.mood+2);updateAll();saveGame();
+}
+
+// 给好友喂食
+function feedFriend(){
+  if(!document.getElementById("friend-pet").textContent){
+    return alert("先召唤好友再来喂食哦");
+  }
+  game.score = Math.max(0, game.score - 2);
+  game.mood = Math.min(100, game.mood + 5);
+  alert("🍬 你喂了好友零食！心情+5，消耗2积分");
+  
+  let heart = document.createElement("div");
+  heart.className = "heart";
+  heart.textContent = "💛";
+  heart.style.left="50%";heart.style.top="45%";
+  document.body.appendChild(heart);
+  setTimeout(()=>heart.remove(), 700);
+  
+  updateAll();
+  saveGame();
+}
+
+// 启动
+loadTheme();
+loadGame();
+goPage("home");
+</script>
+</body>
+</html>
